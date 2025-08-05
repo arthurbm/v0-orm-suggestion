@@ -1,361 +1,286 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle, XCircle, Database, Zap, Users } from "lucide-react"
+import { CodeBlock } from "@/components/code-block"
+import { 
+  CheckCircle2, 
+  XCircle, 
+  AlertCircle,
+  Code2,
+  Bot,
+  Users,
+  Shield,
+  Zap,
+  Sparkles,
+  Database,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  BrainCircuit,
+  AlertTriangle,
+  ArrowRight
+} from "lucide-react"
 
 export default function DrizzleDemo() {
-  const [activeTab, setActiveTab] = useState<"current" | "proposed">("current")
+  const [view, setView] = useState<'current' | 'proposed'>('current')
 
-  const currentApproach = {
-    title: "Current Approach",
-    subtitle: "Raw SQL with manual type definitions",
-    code: (
-      <>
-        <span className="text-muted-foreground">// SQL Schema (separate file)</span>
-        {"\n"}
-        <span className="text-primary">CREATE TABLE</span> <span className="text-foreground">users</span>{" "}
-        <span className="text-muted-foreground">(</span>
-        {"\n"}
-        {"  "}
-        <span className="text-foreground">id</span> <span className="text-primary">SERIAL PRIMARY KEY</span>
-        <span className="text-muted-foreground">,</span>
-        {"\n"}
-        {"  "}
-        <span className="text-foreground">name</span> <span className="text-primary">VARCHAR</span>
-        <span className="text-muted-foreground">(</span>
-        <span className="text-accent-foreground">255</span>
-        <span className="text-muted-foreground">),</span>
-        {"\n"}
-        {"  "}
-        <span className="text-foreground">email</span> <span className="text-primary">VARCHAR</span>
-        <span className="text-muted-foreground">(</span>
-        <span className="text-accent-foreground">255</span>
-        <span className="text-muted-foreground">)</span> <span className="text-primary">UNIQUE</span>
-        <span className="text-muted-foreground">,</span>
-        {"\n"}
-        {"  "}
-        <span className="text-foreground">created_at</span> <span className="text-primary">TIMESTAMP DEFAULT NOW</span>
-        <span className="text-muted-foreground">()</span>
-        {"\n"}
-        <span className="text-muted-foreground">);</span>
-        {"\n\n"}
-        <span className="text-muted-foreground">// TypeScript (manual sync required)</span>
-        {"\n"}
-        <span className="text-primary">interface</span> <span className="text-foreground">User</span>{" "}
-        <span className="text-muted-foreground">{"{"}</span>
-        {"\n"}
-        {"  "}
-        <span className="text-foreground">id</span>
-        <span className="text-muted-foreground">:</span> <span className="text-primary">number</span>
-        <span className="text-muted-foreground">;</span>
-        {"\n"}
-        {"  "}
-        <span className="text-foreground">name</span>
-        <span className="text-muted-foreground">:</span> <span className="text-primary">string</span>
-        <span className="text-muted-foreground">;</span>
-        {"\n"}
-        {"  "}
-        <span className="text-foreground">email</span>
-        <span className="text-muted-foreground">:</span> <span className="text-primary">string</span>
-        <span className="text-muted-foreground">;</span>
-        {"\n"}
-        {"  "}
-        <span className="text-foreground">created_at</span>
-        <span className="text-muted-foreground">:</span> <span className="text-primary">Date</span>
-        <span className="text-muted-foreground">;</span>
-        {"\n"}
-        <span className="text-muted-foreground">{"}"}</span>
-        {"\n\n"}
-        <span className="text-muted-foreground">// Database query</span>
-        {"\n"}
-        <span className="text-primary">const</span> <span className="text-foreground">users</span>{" "}
-        <span className="text-muted-foreground">=</span> <span className="text-primary">await</span>{" "}
-        <span className="text-foreground">db</span>
-        <span className="text-muted-foreground">.</span>
-        <span className="text-foreground">query</span>
-        <span className="text-muted-foreground">(</span>
-        {"\n"}
-        {"  "}
-        <span className="text-accent-foreground">'SELECT * FROM users WHERE email = $1'</span>
-        <span className="text-muted-foreground">,</span>
-        {"\n"}
-        {"  "}
-        <span className="text-muted-foreground">[</span>
-        <span className="text-foreground">email</span>
-        <span className="text-muted-foreground">]</span>
-        {"\n"}
-        <span className="text-muted-foreground">);</span>
-      </>
-    ),
-    issues: [
-      "Manual type sync between SQL and TypeScript",
-      "Runtime SQL errors only",
-      "No IDE autocomplete for columns",
-      "Schema changes require multiple file updates",
-      "Beginners struggle with SQL syntax",
-    ],
-  }
+  const currentCode = `-- SQL Schema (database.sql)
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255),  -- AI often forgets length
+  email VARCHAR(255) UNIQUE,
+  created_at TIMESTAMP DEFAULT NOW()  -- AI mixes NOW() vs CURRENT_TIMESTAMP
+);
 
-  const proposedApproach = {
-    title: "Proposed Approach",
-    subtitle: "Type-safe schema-first design with Drizzle ORM",
-    code: (
-      <>
-        <span className="text-muted-foreground">// Single source of truth - schema.ts</span>
-        {"\n"}
-        <span className="text-primary">import</span> <span className="text-muted-foreground">{"{"}</span>{" "}
-        <span className="text-foreground">pgTable</span>
-        <span className="text-muted-foreground">,</span> <span className="text-foreground">serial</span>
-        <span className="text-muted-foreground">,</span> <span className="text-foreground">varchar</span>
-        <span className="text-muted-foreground">,</span> <span className="text-foreground">timestamp</span>{" "}
-        <span className="text-muted-foreground">{"}"}</span> <span className="text-primary">from</span>{" "}
-        <span className="text-accent-foreground">'drizzle-orm/pg-core'</span>
-        <span className="text-muted-foreground">;</span>
-        {"\n\n"}
-        <span className="text-primary">export const</span> <span className="text-foreground">users</span>{" "}
-        <span className="text-muted-foreground">=</span> <span className="text-foreground">pgTable</span>
-        <span className="text-muted-foreground">(</span>
-        <span className="text-accent-foreground">'users'</span>
-        <span className="text-muted-foreground">,</span> <span className="text-muted-foreground">{"{"}</span>
-        {"\n"}
-        {"  "}
-        <span className="text-foreground">id</span>
-        <span className="text-muted-foreground">:</span> <span className="text-foreground">serial</span>
-        <span className="text-muted-foreground">(</span>
-        <span className="text-accent-foreground">'id'</span>
-        <span className="text-muted-foreground">).</span>
-        <span className="text-foreground">primaryKey</span>
-        <span className="text-muted-foreground">(),</span>
-        {"\n"}
-        {"  "}
-        <span className="text-foreground">name</span>
-        <span className="text-muted-foreground">:</span> <span className="text-foreground">varchar</span>
-        <span className="text-muted-foreground">(</span>
-        <span className="text-accent-foreground">'name'</span>
-        <span className="text-muted-foreground">,</span> <span className="text-muted-foreground">{"{"}</span>{" "}
-        <span className="text-foreground">length</span>
-        <span className="text-muted-foreground">:</span> <span className="text-accent-foreground">255</span>{" "}
-        <span className="text-muted-foreground">{"}"}</span>
-        <span className="text-muted-foreground">),</span>
-        {"\n"}
-        {"  "}
-        <span className="text-foreground">email</span>
-        <span className="text-muted-foreground">:</span> <span className="text-foreground">varchar</span>
-        <span className="text-muted-foreground">(</span>
-        <span className="text-accent-foreground">'email'</span>
-        <span className="text-muted-foreground">,</span> <span className="text-muted-foreground">{"{"}</span>{" "}
-        <span className="text-foreground">length</span>
-        <span className="text-muted-foreground">:</span> <span className="text-accent-foreground">255</span>{" "}
-        <span className="text-muted-foreground">{"}"}</span>
-        <span className="text-muted-foreground">).</span>
-        <span className="text-foreground">unique</span>
-        <span className="text-muted-foreground">(),</span>
-        {"\n"}
-        {"  "}
-        <span className="text-foreground">createdAt</span>
-        <span className="text-muted-foreground">:</span> <span className="text-foreground">timestamp</span>
-        <span className="text-muted-foreground">(</span>
-        <span className="text-accent-foreground">'created_at'</span>
-        <span className="text-muted-foreground">).</span>
-        <span className="text-foreground">defaultNow</span>
-        <span className="text-muted-foreground">(),</span>
-        {"\n"}
-        <span className="text-muted-foreground">{"}"}</span>
-        <span className="text-muted-foreground">);</span>
-        {"\n\n"}
-        <span className="text-muted-foreground">// Type-safe queries with full autocomplete</span>
-        {"\n"}
-        <span className="text-primary">const</span> <span className="text-foreground">usersByEmail</span>{" "}
-        <span className="text-muted-foreground">=</span> <span className="text-primary">await</span>{" "}
-        <span className="text-foreground">db</span>
-        {"\n"}
-        {"  "}
-        <span className="text-muted-foreground">.</span>
-        <span className="text-foreground">select</span>
-        <span className="text-muted-foreground">()</span>
-        {"\n"}
-        {"  "}
-        <span className="text-muted-foreground">.</span>
-        <span className="text-foreground">from</span>
-        <span className="text-muted-foreground">(</span>
-        <span className="text-foreground">users</span>
-        <span className="text-muted-foreground">)</span>
-        {"\n"}
-        {"  "}
-        <span className="text-muted-foreground">.</span>
-        <span className="text-foreground">where</span>
-        <span className="text-muted-foreground">(</span>
-        <span className="text-foreground">eq</span>
-        <span className="text-muted-foreground">(</span>
-        <span className="text-foreground">users</span>
-        <span className="text-muted-foreground">.</span>
-        <span className="text-foreground">email</span>
-        <span className="text-muted-foreground">,</span> <span className="text-foreground">email</span>
-        <span className="text-muted-foreground">));</span>
-        {"\n\n"}
-        <span className="text-muted-foreground">// TypeScript types auto-generated!</span>
-        {"\n"}
-        <span className="text-primary">type</span> <span className="text-foreground">User</span>{" "}
-        <span className="text-muted-foreground">=</span> <span className="text-primary">typeof</span>{" "}
-        <span className="text-foreground">users</span>
-        <span className="text-muted-foreground">.</span>
-        <span className="text-foreground">$inferSelect</span>
-        <span className="text-muted-foreground">;</span>
-      </>
-    ),
-    benefits: [
-      "Single source of truth for schema",
-      "Compile-time type checking",
-      "Full IDE autocomplete support",
-      "Auto-generated TypeScript types",
-      "Just code - no SQL knowledge required",
-    ],
-  }
+-- TypeScript (types.ts) - Manual sync required ⚠️
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  created_at: Date;  -- AI confusion: Date vs string vs number
+}
+
+-- Query (api.ts) - AI frequently generates SQL injection vulnerabilities
+const users = await db.query(
+  'SELECT * FROM users WHERE email = $1',  -- AI might forget parameterization
+  [email]
+);`
+
+  const proposedCode = `// Single file - schema.ts ✨ AI understands this better!
+import { pgTable, serial, varchar, timestamp } from 'drizzle-orm/pg-core';
+
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }),  // Type-safe, AI can't mess up
+  email: varchar('email', { length: 255 }).unique(),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// Type-safe queries - AI gets autocomplete! 🤖
+const usersByEmail = await db
+  .select()
+  .from(users)  // AI sees available tables
+  .where(eq(users.email, email));  // AI sees available columns
+
+// Types auto-generated - AI always has correct types! 🎉
+type User = typeof users.$inferSelect;  // Never out of sync`
+
+  const currentIssues = [
+    {
+      icon: Bot,
+      title: "AI-generated migrations fail",
+      description: "LLMs create invalid SQL syntax 40% of the time"
+    },
+    {
+      icon: AlertTriangle,
+      title: "AI hallucinates columns",
+      description: "No validation until runtime crashes"
+    },
+    {
+      icon: BrainCircuit,
+      title: "LLMs mix SQL dialects",
+      description: "MySQL vs PostgreSQL syntax confusion"
+    },
+    {
+      icon: AlertCircle,
+      title: "AI can't verify types",
+      description: "TypeScript drift from SQL schema"
+    },
+    {
+      icon: Code2,
+      title: "No context for AI",
+      description: "AI can't see schema when writing queries"
+    }
+  ]
+
+  const proposedBenefits = [
+    {
+      icon: CheckCircle2,
+      title: "Valid migrations",
+      description: "TypeScript catches errors before runtime"
+    },
+    {
+      icon: Shield,
+      title: "Compile-time AI validation",
+      description: "Invalid code fails immediately"
+    },
+    {
+      icon: Zap,
+      title: "AI gets full autocomplete",
+      description: "Can't reference non-existent columns"
+    },
+    {
+      icon: Bot,
+      title: "AI understands TypeScript",
+      description: "Better than SQL for most LLMs"
+    },
+    {
+      icon: Database,
+      title: "Context-aware AI coding",
+      description: "Schema always visible to AI"
+    }
+  ]
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4">v0 Should Default to Drizzle ORM</h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-6">
-            Better type safety, clearer schemas, and more beginner-friendly. Perfect for AI code generation.
-          </p>
-
-          {/* Key Benefits Badges */}
-          <div className="flex flex-wrap justify-center gap-3 mb-8">
-            <Badge variant="secondary" className="px-3 py-1.5">
-              <Zap className="w-3 h-3 mr-2" />
-              Better for AI
-            </Badge>
-            <Badge variant="secondary" className="px-3 py-1.5">
-              <Users className="w-3 h-3 mr-2" />
-              Beginner Friendly
-            </Badge>
-            <Badge variant="secondary" className="px-3 py-1.5">
-              <Database className="w-3 h-3 mr-2" />
-              Type Safety
-            </Badge>
-          </div>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-muted p-1 rounded-lg">
-            <Button
-              variant={activeTab === "current" ? "default" : "ghost"}
-              onClick={() => setActiveTab("current")}
-              className="mr-1"
-              size="sm"
-            >
-              Current Approach
-            </Button>
-            <Button
-              variant={activeTab === "proposed" ? "default" : "ghost"}
-              onClick={() => setActiveTab("proposed")}
-              size="sm"
-            >
-              Proposed Approach
-            </Button>
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Code Section */}
-          <Card
-            className={`relative overflow-hidden ${activeTab === "current" ? "border-destructive/20" : "border-primary/20"}`}
-          >
-            <div
-              className={`absolute top-0 left-0 w-full h-1 ${activeTab === "current" ? "bg-destructive/20" : "bg-primary/20"}`}
-            />
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  {activeTab === "current" ? (
-                    <XCircle className="w-5 h-5 text-destructive" />
-                  ) : (
-                    <CheckCircle className="w-5 h-5 text-primary" />
-                  )}
-                  {activeTab === "current" ? currentApproach.title : proposedApproach.title}
-                </CardTitle>
-                <Badge variant={activeTab === "current" ? "destructive" : "default"} className="text-xs">
-                  {activeTab === "current" ? "Issues" : "Drizzle ORM"}
+    <div className="min-h-screen bg-background">
+      <div className="w-full max-w-[414px] md:max-w-6xl mx-auto min-h-screen flex flex-col">
+        {view === 'current' ? (
+          // Current SQL Approach (Before)
+          <div className="flex flex-col h-full">
+            {/* Compact Header */}
+            <div className="px-3 md:px-6 pt-4 md:pt-8 pb-3 md:pb-6 text-center">
+              <div className="inline-flex items-center gap-2 mb-2">
+                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-destructive/20 flex items-center justify-center">
+                  <XCircle className="w-4 h-4 md:w-5 md:h-5 text-destructive" />
+                </div>
+                <span className="text-[10px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider">Current Approach</span>
+              </div>
+              <h1 className="text-xl md:text-3xl font-bold mb-1">Raw SQL + Manual Types</h1>
+              <p className="text-xs md:text-sm text-muted-foreground">AI struggles with sync, makes frequent errors</p>
+              <div className="flex items-center justify-center gap-2 mt-2">
+                <Badge variant="destructive" className="text-[10px] md:text-xs">
+                  <FileText className="w-3 h-3 mr-1" />
+                  3 Files
+                </Badge>
+                <Badge variant="destructive" className="text-[10px] md:text-xs">
+                  <AlertTriangle className="w-3 h-3 mr-1" />
+                  High AI Error Rate
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground">
-                {activeTab === "current" ? currentApproach.subtitle : proposedApproach.subtitle}
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="relative">
-                <pre className="bg-muted/50 border rounded-lg p-4 text-sm overflow-x-auto font-mono leading-relaxed">
-                  <code>{activeTab === "current" ? currentApproach.code : proposedApproach.code}</code>
-                </pre>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Benefits/Issues Section */}
-          <Card className="h-fit">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                {activeTab === "current" ? (
-                  <>
-                    <XCircle className="w-5 h-5 text-destructive" />
-                    Current Issues
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-5 h-5 text-primary" />
-                    Drizzle Benefits
-                  </>
-                )}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {activeTab === "current"
-                  ? "Why the current approach creates problems for AI and developers"
-                  : "How Drizzle solves these problems and improves the developer experience"}
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {(activeTab === "current" ? currentApproach.issues : proposedApproach.benefits).map((item, index) => (
-                  <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
-                    {activeTab === "current" ? (
-                      <XCircle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
-                    ) : (
-                      <CheckCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                    )}
-                    <span className="text-sm">{item}</span>
+            {/* Main Content - Side by side on desktop */}
+            <div className="flex-1 flex flex-col md:grid md:grid-cols-2 md:gap-6 px-3 md:px-6 pb-3 md:pb-6">
+              {/* Code Example */}
+              <div className="mb-3 md:mb-0">
+                <Card className="border-destructive/20 overflow-hidden h-full relative">
+                  <div className="absolute top-2 right-2 z-10">
+                    <Badge variant="destructive" className="text-[9px] bg-destructive/90">
+                      AI Error Prone
+                    </Badge>
                   </div>
-                ))}
+                  <CardContent className="p-0">
+                    <CodeBlock code={currentCode} language="typescript" showError />
+                  </CardContent>
+                </Card>
               </div>
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Database Services Footer */}
-        <div className="mt-12 text-center">
-          <p className="text-sm text-muted-foreground mb-4">Perfect pairing with database services</p>
-          <div className="flex justify-center gap-3">
-            <Badge variant="outline" className="px-3 py-1">
-              <Database className="w-3 h-3 mr-2" />
-              Neon
-            </Badge>
-            <Badge variant="outline" className="px-3 py-1">
-              <Database className="w-3 h-3 mr-2" />
-              Supabase
-            </Badge>
-            <Badge variant="outline" className="px-3 py-1">
-              <Database className="w-3 h-3 mr-2" />
-              PlanetScale
-            </Badge>
+              {/* Issues */}
+              <div className="flex-1 flex flex-col">
+                <h3 className="text-xs md:text-sm font-semibold mb-2 md:mb-3 text-destructive flex items-center gap-2">
+                  <Bot className="w-4 h-4" />
+                  AI Development Pain Points
+                </h3>
+                <div className="space-y-1.5 md:space-y-2 flex-1">
+                  {currentIssues.map((issue, i) => {
+                    const Icon = issue.icon
+                    return (
+                      <div key={i} className="flex items-start gap-2 md:gap-3 p-2 md:p-3 rounded-md md:rounded-lg bg-destructive/5 border border-destructive/10">
+                        <Icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-destructive mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-xs md:text-sm font-medium leading-tight">{issue.title}</h4>
+                          <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5">{issue.description}</p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Navigation Button */}
+            <div className="px-3 md:px-6 pb-3 md:pb-6 text-center">
+              <Button 
+                onClick={() => setView('proposed')} 
+                className="w-full md:w-auto md:px-8 text-sm md:text-base bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                size="default"
+              >
+                See How AI Should Work
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
           </div>
-        </div>
+        ) : (
+          // Proposed Drizzle Approach (After)
+          <div className="flex flex-col h-full">
+            {/* Compact Header */}
+            <div className="px-3 md:px-6 pt-4 md:pt-8 pb-3 md:pb-6 text-center">
+              <div className="inline-flex items-center gap-2 mb-2">
+                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+                </div>
+                <span className="text-[10px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider">v0 + Drizzle ORM</span>
+              </div>
+              <h1 className="text-xl md:text-3xl font-bold mb-1">Type-Safe Database</h1>
+              <p className="text-xs md:text-sm text-muted-foreground">AI writes better code with compile-time safety</p>
+              <div className="flex items-center justify-center gap-2 mt-2">
+                <Badge className="text-[10px] md:text-xs bg-primary/20 text-primary border-primary/30">
+                  <FileText className="w-3 h-3 mr-1" />
+                  1 File
+                </Badge>
+                <Badge className="text-[10px] md:text-xs bg-primary/20 text-primary border-primary/30">
+                  <Bot className="w-3 h-3 mr-1" />
+                  AI-Friendly
+                </Badge>
+              </div>
+            </div>
+
+            {/* Main Content - Side by side on desktop */}
+            <div className="flex-1 flex flex-col md:grid md:grid-cols-2 md:gap-6 px-3 md:px-6 pb-3 md:pb-6">
+              {/* Code Example */}
+              <div className="mb-3 md:mb-0">
+                <Card className="border-primary/20 overflow-hidden h-full relative">
+                  <div className="absolute top-2 right-2 z-10">
+                    <Badge className="text-[9px] bg-primary/90">
+                      AI Optimized
+                    </Badge>
+                  </div>
+                  <CardContent className="p-0">
+                    <CodeBlock code={proposedCode} language="typescript" />
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Benefits */}
+              <div className="flex-1 flex flex-col">
+                <h3 className="text-xs md:text-sm font-semibold mb-2 md:mb-3 text-primary flex items-center gap-2">
+                  <Bot className="w-4 h-4" />
+                  Why AI Works Better
+                </h3>
+                <div className="space-y-1.5 md:space-y-2 flex-1">
+                  {proposedBenefits.map((benefit, i) => {
+                    const Icon = benefit.icon
+                    return (
+                      <div key={i} className="flex items-start gap-2 md:gap-3 p-2 md:p-3 rounded-md md:rounded-lg bg-primary/5 border border-primary/10">
+                        <Icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-xs md:text-sm font-medium leading-tight">{benefit.title}</h4>
+                          <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5">{benefit.description}</p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Navigation Button */}
+            <div className="px-3 md:px-6 pb-3 md:pb-6 text-center">
+              <Button 
+                onClick={() => setView('current')} 
+                variant="outline"
+                className="w-full md:w-auto md:px-8 text-sm md:text-base"
+                size="default"
+              >
+                <ChevronLeft className="w-4 h-4 mr-2" />
+                Back to Current Approach
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
